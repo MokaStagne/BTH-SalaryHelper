@@ -1,0 +1,36 @@
+MES POINTAGES - INSTALLATION SUR TÉLÉPHONE
+==========================================
+
+Il faut mettre l'application en ligne une seule fois (gratuit), puis l'installer
+sur le téléphone. Ensuite, elle fonctionne sans internet.
+
+1. METTRE EN LIGNE (depuis un ordinateur, 5 minutes)
+   - Décompressez le fichier mes-pointages.zip : vous obtenez un dossier "mes-pointages".
+   - Allez sur https://app.netlify.com/drop
+   - Glissez le DOSSIER "mes-pointages" dans la zone prévue.
+   - Créez un compte Netlify gratuit quand il est proposé ("Claim"),
+     sinon le site est supprimé au bout de peu de temps.
+   - Notez l'adresse du site (du type https://xxxx.netlify.app).
+
+2. INSTALLER SUR LE TÉLÉPHONE
+   - Ouvrez l'adresse du site sur le téléphone.
+   - iPhone : ouvrez-la dans Safari, bouton Partager, puis "Sur l'écran d'accueil".
+   - Android : ouvrez-la dans Chrome, menu ⋮, puis "Installer l'application"
+     ou "Ajouter à l'écran d'accueil".
+   - Ouvrez l'application depuis l'icône et autorisez la localisation
+     au premier pointage.
+
+3. À SAVOIR
+   - Vos données restent uniquement sur le téléphone. Faites régulièrement
+     Paramètres > Enregistrer une sauvegarde.
+   - Sans réseau : les pointages, heures et calculs fonctionnent. Une nouvelle
+     adresse est cherchée automatiquement au retour du réseau
+     (les lieux du carnet d'adresses sont reconnus même hors ligne).
+   - Les kilomètres d'un nouveau trajet se saisissent une fois
+     (lien "Voir l'itinéraire"), puis sont retenus.
+   - iPhone : si l'application n'est pas ouverte pendant plusieurs semaines,
+     iOS peut effacer ses données. Gardez une sauvegarde récente.
+
+4. METTRE À JOUR L'APPLICATION
+   - Remplacez les fichiers du dossier, changez "v1" en "v2" dans sw.js,
+     puis glissez à nouveau le dossier sur la page "Deploys" de votre site Netlify.
