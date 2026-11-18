@@ -1,6 +1,6 @@
 // Fonctionnement hors ligne : l’application est gardée sur le téléphone.
 // Pour publier une mise à jour, changer le numéro de version ci-dessous.
-const CACHE = "mes-pointages-v1";
+const CACHE = "mes-pointages-v9";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
