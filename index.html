@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes Pointages</title>
+<meta name="theme-color" content="#23415A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pointages">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#ECEEEA;--surface:#FFFFFF;--surface2:#F3F4F1;--text:#1C2127;--muted:#5E6670;--line:#D6DAD4;
+  --ink:#23415A;--ink-on:#FFFFFF;--vis:#E8A800;--vis-on:#1C2127;
+  --ok:#2E7D4F;--warn:#B8740A;--bad:#B93A2E;--trip:#6A4BB5;--leave:#11807E;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181C;--surface:#1D2228;--surface2:#252B32;--text:#E9ECEF;--muted:#9AA3AD;--line:#323941;
+    --ink:#8FB6D8;--ink-on:#0F1A24;--vis:#F5C02B;--vis-on:#14181C;
+    --ok:#5CC08A;--warn:#E3A54A;--bad:#F07468;--trip:#A98BEB;--leave:#4CC6C2;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181C;--surface:#1D2228;--surface2:#252B32;--text:#E9ECEF;--muted:#9AA3AD;--line:#323941;
+  --ink:#8FB6D8;--ink-on:#0F1A24;--vis:#F5C02B;--vis-on:#14181C;
+  --ok:#5CC08A;--warn:#E3A54A;--bad:#F07468;--trip:#A98BEB;--leave:#4CC6C2;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--vis);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px}
+.top h1{font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;font-weight:700;font-size:1.75rem;line-height:1;margin:0;letter-spacing:.2px;flex:1}
+.top .stripe{width:10px;height:28px;border-radius:2px;background:repeating-linear-gradient(-45deg,var(--vis) 0 5px,var(--text) 5px 10px)}
+main{max-width:620px;margin:0 auto;padding:4px 14px 110px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;max-width:120px;background:none;border:0;padding:6px 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;color:var(--muted);cursor:pointer}
+nav button .i{font-size:1.25rem;line-height:1}
+nav button.on{color:var(--text);font-weight:600;background:var(--surface2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
+.card h2{font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;font-size:1.3rem;margin:0 0 8px;font-weight:700}
+.muted{color:var(--muted)}
+.hint{color:var(--muted);font-size:.85rem;margin-top:4px}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{min-width:0}
+.grow{flex:1}
+.in,input[type=time],input[type=date],select{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 11px;min-height:44px}
+input[type=time]{width:auto;min-width:108px;font-weight:600}
+.btn{border:0;border-radius:10px;padding:11px 14px;min-height:44px;font-weight:600;cursor:pointer;background:var(--ink);color:var(--ink-on)}
+.btn.vis{background:var(--vis);color:var(--vis-on)}
+.btn.line{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.full{width:100%}
+.link{background:none;border:0;padding:6px 0;color:var(--ink);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* Calendrier */
+.mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mnav b{font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;font-size:1.5rem;text-transform:capitalize}
+.mnav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.3rem;cursor:pointer}
+.wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;text-align:center;font-size:.8rem;color:var(--muted);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cell{aspect-ratio:1/1.12;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:5px 4px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;cursor:pointer;text-align:left;overflow:hidden}
+.cell.out{opacity:.38}
+.cell.today{border:2px solid var(--vis)}
+.cell .n{font-weight:700;font-size:.95rem}
+.cell{position:relative}
+.cell .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.legend .np::before{border-radius:50%}
+.cell .bar{display:block;width:100%;height:4px;border-radius:2px}
+.cell .h{font-size:.72rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin:12px 2px;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:5px;vertical-align:-1px}
+.wk{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.wk:first-of-type{border-top:0}
+.gauge{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:4px}
+.gauge i{display:block;height:100%;background:var(--ink)}
+.gauge i.over{background:var(--vis)}
+/* Journée */
+.dayhead{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.dayhead input{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--surface2);border-radius:999px;padding:8px 12px;min-height:40px;cursor:pointer;font-weight:500;font-size:.92rem}
+.chip.on{border-color:var(--c);background:var(--c);color:#fff;font-weight:600}
+.typenote{margin-top:10px;padding:9px 11px;border-left:4px solid var(--c);background:var(--surface2);border-radius:0 8px 8px 0;font-size:.9rem}
+.steps{position:relative;padding-left:0;margin:0;list-style:none}
+.pt{position:relative;padding:0 0 16px 44px}
+.pt::before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--line)}
+.pt:last-child{padding-bottom:0}
+.pt:last-child::before{display:none}
+.pt .num{position:absolute;left:0;top:0;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;font-weight:700;font-size:1.1rem;background:var(--surface2);border:1.5px solid var(--line)}
+.pt.done .num{background:var(--vis);color:var(--vis-on);border-color:var(--vis)}
+.pt-h{display:flex;align-items:center;gap:8px;min-height:32px;margin-bottom:6px}
+.pt-h b{flex:1}
+.pt .in{margin-bottom:6px}
+.pt .btn{margin-top:2px}
+.maplink{white-space:nowrap;font-weight:600;color:var(--ink);padding:10px 4px}
+.check{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.check input{width:22px;height:22px;accent-color:var(--ink)}
+.prime{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.prime .m{max-width:110px}
+.x{width:44px;height:44px;flex:none;border-radius:10px;border:1px solid var(--line);background:none;cursor:pointer;color:var(--bad);font-size:1.1rem}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px dashed var(--line)}
+.kv:first-child{border-top:0}
+.kv b{font-variant-numeric:tabular-nums;text-align:right}
+.pos{color:var(--ok)} .neg{color:var(--bad)}
+/* Récap */
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;font-weight:600;cursor:pointer;color:var(--muted);min-height:40px}
+.seg button.on{background:var(--ink);color:var(--ink-on)}
+.pay{background:var(--ink);color:var(--ink-on);border:0}
+.pay .big{font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;font-size:2.6rem;font-weight:700;line-height:1;margin:4px 0 10px;font-variant-numeric:tabular-nums}
+.pay .sub{display:flex;justify-content:space-between;border-top:1px solid color-mix(in srgb,var(--ink-on) 25%,transparent);padding-top:8px;font-weight:600}
+.pay .sub b{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+td,th{padding:8px 6px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600;border-top:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.mrow{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:11px 2px;cursor:pointer;text-align:left}
+.mrow:first-of-type{border-top:0}
+.mrow span:first-child{text-transform:capitalize;font-weight:600}
+.alert{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:.92rem}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--surface2);cursor:pointer;text-align:left;width:100%}
+.opt.on{border-color:var(--ink);background:color-mix(in srgb,var(--ink) 10%,var(--surface))}
+.opt .i{font-size:1.5rem}
+.opt small{display:block;color:var(--muted)}
+.field{margin-bottom:12px}
+.field label{display:block;font-weight:600;margin-bottom:5px}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.modal .card{width:100%;max-width:480px;margin-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:30;font-weight:600;font-size:.92rem;max-width:90vw;text-align:center}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .2s ease-out}@keyframes pop{from{opacity:0;transform:translate(-50%,8px)}}}
+h3{font-size:1rem;margin:14px 0 4px}
+.traj{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+.traj .kmin{width:96px;flex:none;text-align:right}
+.traj .kmin .in{text-align:right;font-weight:600;padding:8px}
+.traj .kmin small{color:var(--muted);font-size:.75rem}
+.place{padding:10px 0;border-top:1px solid var(--line)}
+.place:first-of-type{border-top:0}
+.btn.sm{padding:8px 11px;min-height:40px;font-size:.9rem}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.badge{display:inline-block;font-size:.78rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);margin:6px 6px 0 0}
+</style>
+</head>
+<body>
+<header class="top"><span class="stripe" aria-hidden="true"></span><h1 id="title">Calendrier</h1></header>
+<main id="main"></main>
+<nav id="nav">
+  <button data-act="nav" data-p="cal"><span class="i">📅</span>Calendrier</button>
+  <button data-act="nav" data-p="recap"><span class="i">📊</span>Récap</button>
+  <button data-act="nav" data-p="info"><span class="i">💶</span>Infos</button>
+  <button data-act="nav" data-p="settings"><span class="i">⚙️</span>Paramètres</button>
+</nav>
+<div id="modal"></div>
+<script>
+const WEEKLY = 38, MONTHLY = 38 * 52 / 12; // 164,67 h
+// Horaire du jour : 8h du lundi au jeudi, 6h le vendredi (= 38h), 0h le week-end
+const dailyFor = ds => { const w = parse(ds).getDay(); return w===5 ? 6 : (w>=1 && w<=4 ? 8 : 0); };
+const ROAD = 1.3; // coefficient route / vol d’oiseau (estimation hors ligne)
+const NEAR = 0.3; // rayon (km) pour reconnaître une adresse du carnet
+const QUARTER = 15; // arrondi au quart d’heure
+// Début de chantier : quart d’heure supérieur. Mobilité vers domicile : quart d’heure inférieur.
+const roundT = (t,up) => { if (!t) return t; const [h,m] = t.split(":").map(Number); let x = h*60+m; x = ((up ? Math.ceil(x/QUARTER) : Math.floor(x/QUARTER))*QUARTER) % 1440; return pad(Math.floor(x/60))+":"+pad(x%60); };
+const ikRate = () => num(S.info.ik);
+const TYPES = {
+  travail:     {l:"Travail", c:"var(--ink)"},
+  deplacement: {l:"Déplacement", c:"var(--trip)"},
+  abs_just:    {l:"Absence justifiée", c:"var(--warn)"},
+  abs_injust:  {l:"Absence injustifiée", c:"var(--bad)"},
+  conge:       {l:"Congé", c:"var(--leave)"},
+  recup:       {l:"Récupération", c:"var(--ok)"},
+  ferie:       {l:"Jour férié", c:"var(--muted)"}
+};
+const NOTES = {
+  travail: "",
+  deplacement: "Déplacement : les adresses et kilomètres ne sont pas pris en compte. Seules les heures et le montant du déplacement comptent.",
+  abs_just: "Journée comptée et payée (8h, 6h le vendredi). L’ajout de kilomètres est bloqué.",
+  abs_injust: "Journée non comptée : l’horaire du jour (8h, 6h le vendredi) × taux horaire est retiré du salaire.",
+  conge: "Journée de congé : décomptée du salaire. L’horaire du jour (8h, 6h le vendredi) × taux horaire est retiré.",
+  ferie: "Jour férié : payé comme une journée de travail (8h, 6h le vendredi). Utilisez-le aussi pour le jour de remplacement fixé par l’employeur quand un férié tombe un week-end.",
+  recup: "Journée de récupération : non payée, comme une absence injustifiée. L’horaire du jour (8h, 6h le vendredi) × taux horaire est retiré du salaire."
+};
+const POINTS = [["depart","Départ domicile"],["chantier","Début de chantier"],["mobilite","Mobilité vers domicile"],["fin","Fin de journée"]];
+const TRAJ = [["depart","chantier","Aller"],["mobilite","fin","Retour"]];
+const MAPS = {
+  google:{n:"Google Maps", i:"🗺️", d:"Android et iPhone", q:a=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`, dir:(a,b)=>`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&travelmode=driving`},
+  waze:{n:"Waze", i:"🚙", d:"Android et iPhone", q:a=>`https://waze.com/ul?q=${encodeURIComponent(a)}`, dir:(a,b)=>`https://waze.com/ul?q=${encodeURIComponent(b)}&navigate=yes`},
+  plans:{n:"Plans", i:"🧭", d:"iPhone uniquement", q:a=>`https://maps.apple.com/?q=${encodeURIComponent(a)}`, dir:(a,b)=>`https://maps.apple.com/?saddr=${encodeURIComponent(a)}&daddr=${encodeURIComponent(b)}&dirflg=d`}
+};
+const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const WD = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => { const [a,b,c] = s.split("-").map(Number); return new Date(a,b-1,c); };
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const monday = d => { const x = new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; };
+const todayIso = () => iso(new Date());
+const num = v => { const n = parseFloat(String(v ?? "").replace(",",".")); return isNaN(n) ? 0 : n; };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const eur = n => (n||0).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const km = n => (Math.round((n||0)*10)/10).toLocaleString("fr-FR")+" km";
+const km1 = n => String(Math.round((n||0)*10)/10).replace(".",",");
+const fmtH = h => { const neg = h < -1e-9; h = Math.abs(h); let H = Math.floor(h), M = Math.round((h-H)*60); if (M===60){H++;M=0;} return (neg?"−":"")+H+"h"+pad(M); };
+const longDate = ds => { const d = parse(ds); return WD[d.getDay()]+" "+d.getDate()+" "+MONTHS[d.getMonth()]+" "+d.getFullYear(); };
+const newId = () => "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ---------- Jours fériés belges (payés comme une journée de travail) ---------- */
+function easter(y){
+  const a = y%19, b = Math.floor(y/100), c = y%100, d = Math.floor(b/4), e = b%4, f = Math.floor((b+8)/25), g = Math.floor((b-f+1)/3);
+  const h = (19*a+b-d-g+15)%30, i = Math.floor(c/4), k = c%4, l = (32+2*e+2*i-h-k)%7, m = Math.floor((a+11*h+22*l)/451);
+  const n = h+l-7*m+114; return new Date(y, Math.floor(n/31)-1, (n%31)+1);
+}
+const HOL = {};
+function holidays(y){
+  if (HOL[y]) return HOL[y];
+  const E = easter(y), o = {}, add = (d,name) => { o[iso(d)] = name; };
+  add(new Date(y,0,1),"Nouvel An"); add(addDays(E,1),"Lundi de Pâques"); add(new Date(y,4,1),"Fête du travail");
+  add(addDays(E,39),"Ascension"); add(addDays(E,50),"Lundi de Pentecôte"); add(new Date(y,6,21),"Fête nationale");
+  add(new Date(y,7,15),"Assomption"); add(new Date(y,10,1),"Toussaint"); add(new Date(y,10,11),"Armistice"); add(new Date(y,11,25),"Noël");
+  return HOL[y] = o;
+}
+const holidayName = ds => holidays(Number(ds.slice(0,4)))[ds] || "";
+
+/* ---------- Données ---------- */
+const KEY = "pointages-v1";
+let S;
+function blank(){ return {type:"travail", postes:[{points:{}},{points:{}}], double:false, noPause:false, primes:[], kmOver:{}, deplMontant:""}; }
+function load(){
+  try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e) { S = null; }
+  if (!S || typeof S !== "object") S = {};
+  S.settings = S.settings || {theme:"auto", mapApp:null};
+  S.info = S.info || {taux:"", majo:25};
+  if (S.info.ik==null) S.info.ik = "0,1579";
+  if (S.settings.autoAddr==null) S.settings.autoAddr = true;
+  S.days = S.days || {};
+  S.places = S.places || [];
+  S.routes = S.routes || {};
+  // Migration de l’ancienne version (coordonnées → adresses, double poste → postes)
+  if (S.info.home && !S.info.homeId){ const p = {id:newId(), addr:"Domicile", lat:S.info.home.lat, lng:S.info.home.lng}; S.places.push(p); S.info.homeId = p.id; }
+  delete S.info.home;
+  for (const [ds,e] of Object.entries(S.days)){
+    if (e.postes) continue;
+    const pts = {};
+    for (const [k,p] of Object.entries(e.points||{})){
+      const n = {t:p.t};
+      if (p.lat!=null){ n.lat = p.lat; n.lng = p.lng; const pl = p.label ? (findPlace(p.label) || addPlace(p.label,p.lat,p.lng)) : nearest(p.lat,p.lng); if (pl) n.place = pl.id; }
+      pts[k] = n;
+    }
+    e.postes = [{points:pts},{points: e.poste2 ? {chantier:{t:e.poste2.debut}, fin:{t:e.poste2.fin}} : {}}];
+    e.double = !!e.poste2?.on; e.kmOver = {};
+    if (e.kmManual) e.kmOver["0-depart"] = e.kmManual;
+    delete e.points; delete e.poste2; delete e.kmManual;
+  }
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+function ensure(ds){ if (!S.days[ds]) S.days[ds] = blank(); const e = S.days[ds]; e.kmOver = e.kmOver||{}; while (e.postes.length<2) e.postes.push({points:{}}); return e; }
+
+/* ---------- Carnet d’adresses ---------- */
+const placeById = id => id ? S.places.find(p=>p.id===id) : null;
+const findPlace = a => { const x = String(a).trim().toLowerCase(); return S.places.find(p=>p.addr.trim().toLowerCase()===x); };
+function addPlace(addr,lat,lng){ const p = {id:newId(), addr:String(addr).trim()}; if (lat!=null){ p.lat = lat; p.lng = lng; } S.places.push(p); return p; }
+function hav(a,b){ const R = 6371, r = x => x*Math.PI/180, dLat = r(b.lat-a.lat), dLng = r(b.lng-a.lng);
+  const h = Math.sin(dLat/2)**2 + Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function nearest(lat,lng){ let best = null, bd = NEAR; for (const p of S.places){ if (p.lat==null) continue; const d = hav(p,{lat,lng}); if (d<bd){ bd = d; best = p; } } return best; }
+const addrOf = pt => placeById(pt?.place)?.addr || "";
+const rkey = (a,b) => [a,b].sort().join("|");
+const hasPt = p => p && (p.t || p.place || p.lat!=null);
+function ptLoc(pt){ const pl = placeById(pt.place); if (pl && pl.lat!=null) return pl; if (pt.lat!=null) return pt; return null; }
+
+/* ---------- Calculs ---------- */
+function dur(a,b){ if (!a || !b) return 0; const m = x => { const [h,mi] = x.split(":").map(Number); return h*60+mi; }; let d = m(b)-m(a); if (d<0) d += 1440; return d; }
+function trajet(e,i,from,to){
+  const P = e.postes[i]?.points || {}, a = P[from], b = P[to];
+  if (!hasPt(a) || !hasPt(b)) return null;
+  const r = {from:a, to:b}, ov = e.kmOver?.[i+"-"+from];
+  if (ov!=null && ov!==""){ r.km = num(ov); r.src = "saisi"; return r; }
+  if (a.place && b.place){
+    if (a.place===b.place){ r.km = 0; r.src = "même adresse"; return r; }
+    const k = rkey(a.place,b.place); if (S.routes[k]!=null){ r.km = S.routes[k]; r.src = S.routeAuto?.[k] ? "calculé" : "mémorisé"; return r; }
+  }
+  const la = ptLoc(a), lb = ptLoc(b);
+  // Pas de distance confirmée : rien n’est compté tant que la distance réelle n’est pas saisie
+  r.km = 0; r.src = "à confirmer"; return r;
+}
+const WEEKEND = {6:1.5, 0:2}; // samedi 150 %, dimanche 200 %
+const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+function calc(e,ds){
+  const r = {h:0, km:0, ik:0, primes:0, depl:0, ded:0, pause:false, ph:[], todo:0, sat:0, sun:0, wkPay:0};
+  // Ajoute des minutes travaillées au jour réel où elles tombent (samedi / dimanche)
+  const addMin = (d, min) => { if (min<=0) return; const w = parse(d).getDay(); if (w===6) r.sat += min/60; if (w===0) r.sun += min/60; };
+  if (!e){ if (ds && holidayName(ds)) r.h = dailyFor(ds); return r; }
+  r.primes = (e.primes||[]).reduce((s,p) => s+num(p.montant), 0);
+  const t = e.type || "travail";
+  if (t==="travail" || t==="deplacement"){
+    const n = e.double ? 2 : 1;
+    for (let i=0;i<n;i++){
+      const P = e.postes[i]?.points || {};
+      const a = roundT(P.chantier?.t,true), b = roundT(P.mobilite?.t,false), total = dur(a,b);
+      let m = total, pause = 0;
+      if (i===0 && m>0 && !e.noPause){ pause = Math.min(30,m); m -= pause; r.pause = true; }
+      if (total>0 && ds){
+        // Découpage à minuit : la partie après minuit compte pour le jour suivant
+        const onDay = Math.min(total, 1440-toMin(a)), onNext = total-onDay, pDay = Math.min(pause, onDay);
+        addMin(ds, onDay-pDay); addMin(iso(addDays(parse(ds),1)), onNext-(pause-pDay));
+      }
+      m = Math.max(0,m)/60; r.ph.push(m); r.h += m;
+      if (t==="travail") for (const [f,to] of TRAJ){ const tr = trajet(e,i,f,to); if (tr){ r.km += tr.km; if (tr.src==="à confirmer") r.todo++; } }
+    }
+    if (t==="deplacement") r.depl = num(e.deplMontant);
+    r.ik = r.km*ikRate();
+    r.wkPay = (r.sat*WEEKEND[6] + r.sun*WEEKEND[0])*num(S.info.taux);
+  } else if (t==="abs_injust" || t==="recup" || t==="conge"){ r.ded = ds && !holidayName(ds) ? dailyFor(ds) : 0; }
+  else { r.h = ds ? dailyFor(ds) : 0; }
+  return r;
+}
+function weekTotal(mon){ let t = 0; for (let i=0;i<7;i++){ const ds = iso(addDays(mon,i)); t += calc(S.days[ds],ds).h; } return t; }
+/* ---------- Estimation du net (calibrée sur les fiches de paye de juillet à octobre 2026) ---------- */
+function netEstimate(brut, mob, netExtra){
+  const onss = brut*1.08*0.1307; // cotisation ONSS ouvrier : 13,07 % sur 108 % du brut
+  // Réduction de cotisations (bonus à l’emploi), d’après les montants relevés sur les fiches
+  const P = [[2705.65,159.47],[2900.44,148.64],[3138.04,32.63]];
+  let bonus;
+  if (brut<=P[0][0]) bonus = Math.min(323.49, P[0][1] + 0.2915*(P[0][0]-brut));
+  else if (brut<=P[1][0]) bonus = P[0][1] + (P[1][1]-P[0][1])*(brut-P[0][0])/(P[1][0]-P[0][0]);
+  else if (brut<=P[2][0]) bonus = P[1][1] + (P[2][1]-P[1][1])*(brut-P[1][0])/(P[2][0]-P[1][0]);
+  else bonus = Math.max(0, P[2][1] - 0.4883*(brut-P[2][0]));
+  bonus = Math.min(bonus, onss);
+  // Imposable : la moitié de l’indemnité de mobilité est imposée
+  const imposable = brut - onss + bonus + mob/2;
+  const prec = Math.max(0, -180.29 + 0.2237*imposable);
+  const x = brut*1.08;
+  const csss = brut<=0 ? 0 : x>=2921.6 ? Math.min(51.64, 18.38 + 0.011*(x-2921.6)) : Math.max(0, 18.38 - 0.076*(2921.6-x));
+  return {brut, onss, bonus, imposable, prec, mob, netExtra, csss, net: imposable - prec + mob/2 + netExtra - csss};
+}
+function monthSum(y,mo){
+  const r = {h:0, km:0, ik:0, primes:0, depl:0, absInj:0, dedH:0, todo:0, sat:0, sun:0, wkPay:0, counts:{}, hs:0, days:0, weeks:[]};
+  const n = new Date(y,mo+1,0).getDate();
+  for (let i=1;i<=n;i++){
+    const ds = iso(new Date(y,mo,i)), e = S.days[ds]; if (!e){ r.h += calc(null,ds).h; continue; }
+    const c = calc(e,ds); r.days++; r.todo += c.todo; r.dedH += c.ded; if (c.ded) r.dedD = (r.dedD||0) + 1; r.h += c.h; r.km += c.km; r.ik += c.ik; r.primes += c.primes; r.depl += c.depl; r.sat += c.sat; r.sun += c.sun; r.wkPay += c.wkPay;
+    if (e.type==="abs_injust" || e.type==="recup" || e.type==="conge") r.absInj++;
+    r.counts[e.type] = (r.counts[e.type]||0)+1;
+  }
+  let mon = monday(new Date(y,mo,1));
+  if (addDays(mon,3).getMonth()!==mo) mon = addDays(mon,7);
+  while (addDays(mon,3).getMonth()===mo){ const t = weekTotal(mon), hs = Math.max(0,t-WEEKLY); r.weeks.push({mon,t,hs}); r.hs += hs; mon = addDays(mon,7); }
+  // Salaire fixe : base mensuelle, moins les absences injustifiées et les récupérations
+  const taux = num(S.info.taux), entree = S.info.entree || "";
+  // Salaire de base = heures prévues de chaque jour ouvrable du mois (8h lun.–jeu., 6h ven.), à partir de la date d’entrée
+  r.schedH = 0; r.schedD = 0; r.ferD = 0; r.ferH = 0; r.ferNames = [];
+  for (let i=1;i<=n;i++){
+    const ds = iso(new Date(y,mo,i)), e = S.days[ds];
+    if ((!entree || ds>=entree) && dailyFor(ds)){
+      r.schedH += dailyFor(ds); r.schedD++;
+      // Jour férié payé (sauf s’il a été travaillé) ou jour de remplacement saisi
+      const hn = holidayName(ds), worked = e && (e.type==="travail" || e.type==="deplacement");
+      if ((hn && !worked) || e?.type==="ferie"){ r.ferD++; r.ferH += dailyFor(ds); r.ferNames.push(parse(ds).getDate()+" "+MONTHS[mo]+(hn ? " ("+hn+")" : "")); }
+    }
+  }
+  // Jours et heures prestés, comme sur la fiche : jours ouvrables moins les jours non payés et les fériés
+  r.prestD = Math.max(0, r.schedD - (r.dedD||0) - r.ferD); r.prestH = Math.max(0, r.schedH - r.dedH - r.ferH);
+  r.base = taux*r.schedH; r.ded = r.dedH*taux;
+  r.sans = r.base - r.ded + r.wkPay; r.avec = r.sans + r.primes + r.depl + r.ik;
+  r.fiche = r.sans + r.primes; // « Salaire brut total » de la fiche
+  r.frais = num(S.frais?.[y+"-"+pad(mo+1)]);
+  r.net = netEstimate(r.fiche, r.ik, r.frais + r.depl);
+  return r;
+}
+
+/* ---------- Géolocalisation ---------- */
+function getPos(){
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    try { navigator.geolocation.getCurrentPosition(p => res({lat:p.coords.latitude, lng:p.coords.longitude}), () => res(null), {enableHighAccuracy:true, timeout:15000, maximumAge:0}); }
+    catch(e){ res(null); }
+  });
+}
+// Adresse d’une position : service OpenStreetMap (Nominatim), uniquement quand il y a du réseau.
+async function reverseGeocode(lat,lng){
+  if (!navigator.onLine) return null;
+  try {
+    const ctrl = new AbortController(), tm = setTimeout(() => ctrl.abort(), 7000);
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=fr`, {signal:ctrl.signal, headers:{"Accept":"application/json"}});
+    clearTimeout(tm);
+    if (!r.ok) return null;
+    const j = await r.json(), a = j.address || {};
+    const street = [a.house_number, a.road || a.pedestrian || a.footway || a.path || a.hamlet || a.neighbourhood].filter(Boolean).join(" ");
+    const city = [a.postcode, a.city || a.town || a.village || a.municipality].filter(Boolean).join(" ");
+    return [street, city].filter(Boolean).join(", ") || j.display_name || null;
+  } catch(e){ return null; }
+}
+// Kilométrage par la route, calculé automatiquement quand il y a du réseau (OpenStreetMap / OSRM)
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function getJSON(url){
+  const ctrl = new AbortController(), tm = setTimeout(() => ctrl.abort(), 9000);
+  try { const r = await fetch(url, {signal:ctrl.signal, headers:{"Accept":"application/json"}}); return r.ok ? await r.json() : null; }
+  catch(e){ return null; } finally { clearTimeout(tm); }
+}
+async function geocodeAddr(addr){
+  const j = await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fr&q=${encodeURIComponent(addr)}`);
+  return j && j[0] ? {lat:parseFloat(j[0].lat), lng:parseFloat(j[0].lon)} : null;
+}
+async function routeKm(A,B){
+  const j = await getJSON(`https://router.project-osrm.org/route/v1/driving/${A.lng},${A.lat};${B.lng},${B.lat}?overview=false`);
+  return j && j.code==="Ok" && j.routes && j.routes[0] ? j.routes[0].distance/1000 : null;
+}
+let routing = false; const routeFailed = new Set();
+async function autoRoutes(){
+  if (routing || !navigator.onLine) return;
+  routing = true; let n = 0;
+  try {
+    const pairs = new Map();
+    for (const e of Object.values(S.days)){
+      if ((e.type||"travail")!=="travail") continue;
+      for (const po of e.postes||[]) for (const [f,to] of TRAJ){
+        const a = po.points?.[f]?.place, b = po.points?.[to]?.place;
+        if (a && b && a!==b){ const k = rkey(a,b); if (S.routes[k]==null && !routeFailed.has(k)) pairs.set(k,[a,b]); }
+      }
+    }
+    for (const [k,[ia,ib]] of pairs){
+      const A = placeById(ia), B = placeById(ib); if (!A || !B) continue;
+      for (const P of [A,B]) if (P.lat==null && P.addr){ const g = await geocodeAddr(P.addr); await sleep(1100); if (g){ P.lat = g.lat; P.lng = g.lng; save(); } }
+      if (A.lat==null || B.lat==null){ routeFailed.add(k); continue; }
+      const d = await routeKm(A,B);
+      if (d==null){ routeFailed.add(k); continue; }
+      S.routes[k] = Math.round(d*10)/10; S.routeAuto = S.routeAuto || {}; S.routeAuto[k] = true; n++; save();
+    }
+  } finally { routing = false; }
+  if (n){ toast(n+" trajet"+(n>1?"s":"")+" calculé"+(n>1?"s":"")+" automatiquement"); render(); }
+}
+// Pointages enregistrés sans réseau : l’adresse est cherchée dès que le réseau revient
+let resolving = false;
+async function resolvePending(){
+  if (resolving || !navigator.onLine || !S.settings.autoAddr) return;
+  resolving = true; let n = 0;
+  try {
+    for (const e of Object.values(S.days)) for (const po of e.postes||[]) for (const p of Object.values(po.points||{})){
+      if (!p.pending || p.place || p.lat==null) continue;
+      let pl = nearest(p.lat,p.lng);
+      if (!pl){ const addr = await reverseGeocode(p.lat,p.lng); if (!addr) continue; pl = findPlace(addr) || addPlace(addr,p.lat,p.lng); await new Promise(r=>setTimeout(r,1100)); }
+      p.place = pl.id; p.pending = false; n++; save();
+    }
+  } finally { resolving = false; }
+  if (n){ toast(n+" adresse"+(n>1?"s":"")+" retrouvée"+(n>1?"s":"")); render(); }
+  autoRoutes();
+}
+const mapApp = () => MAPS[S.settings.mapApp] || MAPS.google;
+const mapUrl = pt => { const a = addrOf(pt); return a ? mapApp().q(a) : (pt.lat!=null ? mapApp().q(pt.lat+","+pt.lng) : ""); };
+
+/* ---------- Interface ---------- */
+const V = {page:"cal", cal:new Date(new Date().getFullYear(),new Date().getMonth(),1), day:null, tab:"mois",
+  rMonth:new Date(new Date().getFullYear(),new Date().getMonth(),1), rWeek:monday(new Date()), rDay:todayIso()};
+
+function toast(msg){ const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
+function applyTheme(){ const t = S.settings.theme, r = document.documentElement; if (t==="clair") r.dataset.theme = "light"; else if (t==="sombre") r.dataset.theme = "dark"; else delete r.dataset.theme; }
+
+function render(){
+  const titles = {cal:"Calendrier", day:"Journée", recap:"Récapitulatif", info:"Informations", settings:"Paramètres"};
+  document.getElementById("title").textContent = titles[V.page];
+  const navp = V.page==="day" ? "cal" : V.page;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.p===navp));
+  const f = {cal:renderCal, day:renderDay, recap:renderRecap, info:renderInfo, settings:renderSettings}[V.page];
+  document.getElementById("main").innerHTML = f();
+  if (V.page==="day") setTimeout(autoRoutes, 50);
+  renderModal();
+}
+
+function renderCal(){
+  const y = V.cal.getFullYear(), mo = V.cal.getMonth(), start = monday(new Date(y,mo,1)), last = new Date(y,mo+1,0);
+  let cells = "";
+  for (let i=0;i<42;i++){
+    const d = addDays(start,i); if (i%7===0 && d>last) break;
+    const ds = iso(d), e = S.days[ds], c = calc(e,ds);
+    cells += `<button class="cell${d.getMonth()!==mo?" out":""}${ds===todayIso()?" today":""}" data-act="open" data-d="${ds}" aria-label="${longDate(ds)}">
+      <span class="n">${d.getDate()}</span>${e && (e.type==="travail"||e.type==="deplacement") && e.noPause && c.h>0 ? `<span class="dot" role="img" aria-label="Sans pause midi"></span>` : ""}
+      ${e?`<span class="bar" style="background:${TYPES[e.type].c}"></span><span class="h">${e.type==="abs_injust"?"absent":e.type==="recup"?"récup":e.type==="conge"?"congé":e.type==="ferie"?"férié":fmtH(c.h)}${e.double?" ×2":""}</span>`
+        : holidayName(ds) ? `<span class="bar" style="background:var(--muted)"></span><span class="h">férié</span>` : ""}</button>`;
+  }
+  let weeks = "", mon = start;
+  while (mon<=last){
+    const t = weekTotal(mon), pct = Math.min(100, t/WEEKLY*100);
+    weeks += `<div class="wk"><div class="grow"><div>Semaine du ${mon.getDate()} ${MONTHS[mon.getMonth()].slice(0,4)}.</div><div class="gauge"><i class="${t>WEEKLY?"over":""}" style="width:${pct}%"></i></div></div>
+      <div style="text-align:right;margin-left:12px"><b>${fmtH(t)}</b> <span class="muted">/ 38h</span>${t>WEEKLY?`<div class="hint">+${fmtH(t-WEEKLY)} sup.</div>`:""}</div></div>`;
+    mon = addDays(mon,7);
+  }
+  return `<div class="mnav"><button data-act="cal" data-v="-1" aria-label="Mois précédent">‹</button><b>${MONTHS[mo]} ${y}</b><button data-act="cal" data-v="1" aria-label="Mois suivant">›</button></div>
+  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+  <div class="grid">${cells}</div>
+  <div class="legend">${Object.values(TYPES).map(t=>`<span style="--c:${t.c}">${t.l}</span>`).join("")}<span class="np" style="--c:var(--warn)">Sans pause midi</span></div>
+  <button class="btn vis full" data-act="open" data-d="${todayIso()}">Pointer aujourd’hui</button>
+  <div class="card" style="margin-top:12px"><h2>Heures par semaine</h2>${weeks}</div>`;
+}
+
+function pointCard(i,key,label,n,p,timeOnly){
+  const pl = placeById(p.place), isNew = !pl && p.lat!=null, home = (key==="depart"||key==="fin") && placeById(S.info.homeId);
+  const url = mapUrl(p);
+  return `<li class="pt${p.t?" done":""}"><span class="num">${n}</span>
+    <div class="pt-h"><b>${label}</b><input type="time" value="${p.t||""}" data-f="pt-t" data-i="${i}" data-k="${key}" aria-label="Heure ${label}"></div>
+    ${(key==="chantier"||key==="mobilite") && p.t && roundT(p.t,key==="chantier")!==p.t ? `<div class="hint" style="margin:-2px 0 6px">Pointé à ${p.t.replace(":","h")}, compté <b>${roundT(p.t,key==="chantier").replace(":","h")}</b> (quart d’heure ${key==="chantier"?"supérieur":"inférieur"})</div>` : ""}
+    ${timeOnly?"":`
+    <div class="row"><input class="in grow" list="addrs" placeholder="${isNew?"Nouveau lieu : saisissez l’adresse":"Adresse"}" value="${esc(pl?.addr)}" data-f="addr" data-i="${i}" data-k="${key}" style="margin-bottom:0" aria-label="Adresse ${label}">
+    ${url?`<a class="maplink" target="_blank" rel="noopener" href="${url}">Voir</a>`:""}</div>
+    ${isNew?`<div class="hint">${p.pending?"Adresse cherchée dès le retour du réseau. Vous pouvez aussi la saisir.":"Lieu absent du carnet d’adresses. L’adresse saisie y sera ajoutée."}</div>`:""}
+    ${home && p.place!==S.info.homeId?`<button class="link" data-act="home" data-i="${i}" data-k="${key}">Mettre l’adresse du domicile</button>`:""}`}
+    <div class="btnrow"><button class="btn${p.t?" line":""}" data-act="pointer" data-i="${i}" data-k="${key}" data-to="${timeOnly?1:0}">📍 ${p.t?"Pointer à nouveau":"Pointer"}</button></div>
+  </li>`;
+}
+
+function trajetsHtml(e,i){
+  return TRAJ.map(([f,to,l]) => {
+    const tr = trajet(e,i,f,to);
+    if (!tr) return `<div class="traj"><b>${l}</b><span class="muted">Pointez les deux étapes</span></div>`;
+    const A = addrOf(tr.from), B = addrOf(tr.to), need = tr.src==="à confirmer", dir = A && B ? mapApp().dir(A,B) : "";
+    return `<div class="traj"><div><b>${l}</b><div class="hint" style="margin:0">${esc(A||"Adresse ?")} → ${esc(B||"Adresse ?")}</div>
+        ${need?`<div class="hint" style="margin:0">${navigator.onLine?"Calcul automatique en cours…":"Calcul automatique au retour du réseau."}</div>`:""}</div>
+      <div class="kmin"><input class="in" inputmode="decimal" placeholder="km" value="${need?"":km1(tr.km)}" data-f="km" data-i="${i}" data-from="${f}" data-to="${to}" aria-label="Kilomètres ${l}"><small${need?' style="color:var(--warn);font-weight:600"':""}>${need?"à confirmer":"km "+tr.src}</small></div></div>`;
+  }).join("");
+}
+
+function posteCard(d,i,t,c){
+  const list = t==="travail" ? POINTS : POINTS.filter(p=>p[0]==="chantier"||p[0]==="mobilite");
+  const P = d.postes[i].points, nextDay = P.chantier?.t && P.mobilite?.t && P.mobilite.t <= P.chantier.t;
+  return `<div class="card"><h2>${d.double?"Poste "+(i+1):"Pointages"}</h2>
+    <ol class="steps">${list.map(([k,l],n)=>pointCard(i,k,l,n+1,P[k]||{},t==="deplacement")).join("")}</ol>
+    <div class="hint">Temps de travail, du début de chantier à la mobilité vers domicile${nextDay?" (le lendemain)":""} : <b>${fmtH(c.ph[i]||0)}</b></div>
+    ${i===0?`<label class="check" style="margin-top:6px"><input type="checkbox" data-f="noPause" ${d.noPause?"checked":""}> Pas de pause midi</label>
+      <div class="hint" style="margin-top:0">${d.noPause?"Aucune pause : rien n’est retiré.":"Pause prise : 30 min sont retirées du temps de travail."}</div>`:""}
+    ${t==="travail"?`<h3>Trajets</h3>${trajetsHtml(d,i)}`:""}
+  </div>`;
+}
+
+function renderDay(){
+  const ds = V.day, e = S.days[ds], d = e ? ensure(ds) : blank(), t = d.type, c = calc(e,ds), taux = num(S.info.taux);
+  let h = `<datalist id="addrs">${S.places.map(p=>`<option value="${esc(p.addr)}">`).join("")}</datalist>
+  <div class="dayhead"><button class="btn line" data-act="back">‹ Retour</button><input type="date" value="${ds}" data-f="date" aria-label="Date de la journée"></div>
+  <p style="margin:-4px 2px 12px;font-weight:600;text-transform:capitalize">${longDate(ds)}</p>
+  ${holidayName(ds)?`<div class="alert">Jour férié : ${holidayName(ds)}. ${dailyFor(ds)?"Il est payé comme une journée de travail, rien à pointer si vous n’avez pas travaillé.":"Il tombe un week-end : votre employeur fixe un jour de remplacement, à noter « Jour férié »."}</div>`:""}
+  <div class="card"><h2>Type de journée</h2><div class="chips">${Object.entries(TYPES).map(([k,v])=>`<button class="chip${k===t?" on":""}" style="--c:${v.c}" data-act="type" data-v="${k}">${v.l}</button>`).join("")}</div>
+  ${NOTES[t]?`<div class="typenote" style="--c:${TYPES[t].c}">${NOTES[t]}</div>`:""}</div>`;
+
+  if (t==="travail" || t==="deplacement"){
+    h += posteCard(d,0,t,c);
+    h += `<div class="card"><label class="check"><input type="checkbox" data-f="double" ${d.double?"checked":""}> Double poste</label>
+      <div class="hint" style="margin-top:0">${d.double?"Le 2ᵉ poste a ses propres pointages et trajets. Il peut se terminer le lendemain et reste compté sur ce jour.":"Ajoute un second poste avec ses propres pointages et trajets."}</div></div>`;
+    if (d.double) h += posteCard(d,1,t,c);
+    if (t==="deplacement") h += `<div class="card"><div class="field" style="margin:0"><label for="dep">Montant du déplacement (€)</label><input id="dep" class="in" inputmode="decimal" placeholder="0,00" value="${esc(d.deplMontant)}" data-f="deplMontant"></div></div>`;
+  } else if (t==="abs_just"){
+    h += `<div class="card"><h2>Kilomètres</h2><input class="in" disabled value="Bloqué pour une absence justifiée"></div>`;
+  }
+
+  h += `<div class="card"><h2>Primes</h2>${(d.primes||[]).map((p,i)=>`<div class="prime"><input class="in grow" placeholder="Intitulé" value="${esc(p.label)}" data-f="prime-l" data-i="${i}" style="margin:0"><input class="in m" inputmode="decimal" placeholder="€" value="${esc(p.montant)}" data-f="prime-m" data-i="${i}" style="margin:0"><button class="x" data-act="delprime" data-i="${i}" aria-label="Supprimer la prime">✕</button></div>`).join("")||`<p class="muted" style="margin:0 0 8px">Aucune prime ce jour.</p>`}
+    <button class="btn line" data-act="addprime">+ Ajouter une prime</button></div>`;
+
+  const obj = dailyFor(ds), ecart = c.ded ? -obj : c.h-obj;
+  h += `<div class="card"><h2>Bilan du jour</h2>
+    ${c.ph.length>1?c.ph.map((x,i)=>`<div class="kv"><span>Poste ${i+1}</span><b>${fmtH(x)}</b></div>`).join(""):""}
+    <div class="kv"><span>Heures comptées</span><b>${fmtH(c.h)}</b></div>
+    <div class="kv"><span>Écart sur l’horaire du jour (${fmtH(obj)})</span><b class="${ecart>=0?"pos":"neg"}">${ecart>=0?"+":""}${fmtH(ecart)}</b></div>
+    ${c.pause?`<div class="kv"><span>Pause déduite</span><b>0h30</b></div>`:""}
+    <div class="kv"><span>Kilomètres</span><b>${km(c.km)}</b></div>
+    ${c.todo?`<div class="alert" style="margin:6px 0">${c.todo} trajet${c.todo>1?"s":""} sans distance : ${navigator.onLine?"calcul automatique en cours. S’il échoue, saisissez les km.":"les km seront calculés au retour du réseau."}</div>`:""}
+    ${c.km?`<div class="kv"><span>Indemnités km (${km1(c.km)} × ${esc(S.info.ik)} €)</span><b>${eur(c.ik)}</b></div>`:""}
+    <div class="kv"><span>Primes</span><b>${eur(c.primes)}</b></div>
+    ${t==="deplacement"?`<div class="kv"><span>Déplacement</span><b>${eur(c.depl)}</b></div>`:""}
+    ${c.sat?`<div class="kv"><span>Heures du samedi (${fmtH(c.sat)} à 150 %)</span><b>${eur(c.sat*1.5*taux)}</b></div>`:""}
+    ${c.sun?`<div class="kv"><span>Heures du dimanche (${fmtH(c.sun)} à 200 %)</span><b>${eur(c.sun*2*taux)}</b></div>`:""}
+    <div class="kv"><span>Retenue sur salaire</span><b class="${c.ded?"neg":""}">${c.ded?"−"+eur(c.ded*taux)+" ("+fmtH(c.ded)+")":eur(0)}</b></div>
+    ${!taux?`<div class="hint">Renseignez votre taux horaire dans Infos pour voir les montants.</div>`:""}</div>`;
+  if (e) h += `<button class="btn danger full" data-act="delday">Effacer cette journée</button>`;
+  return h;
+}
+
+function dayDetail(e){
+  if (!(e.type==="travail"||e.type==="deplacement")) return "";
+  let h = "";
+  const n = e.double ? 2 : 1;
+  for (let i=0;i<n;i++){
+    const P = e.postes[i].points;
+    if (n>1) h += `<h3>Poste ${i+1}</h3>`;
+    h += POINTS.filter(([k])=>hasPt(P[k])).map(([k,l])=>`<div class="kv"><span>${l}${addrOf(P[k])?`<br><small class="muted">${esc(addrOf(P[k]))}</small>`:""}</span><b>${P[k].t||"–"}</b></div>`).join("");
+  }
+  return h;
+}
+
+function renderRecap(){
+  const taux = num(S.info.taux);
+  let h = `<div class="seg">${["jour","semaine","mois"].map(k=>`<button class="${V.tab===k?"on":""}" data-act="tab" data-v="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}</div>`;
+  if (!taux) h += `<div class="alert">Le taux horaire n’est pas renseigné. <button class="link" data-act="nav" data-p="info">Le renseigner</button></div>`;
+
+  if (V.tab==="jour"){
+    const e = S.days[V.rDay], c = calc(e,V.rDay);
+    h += `<input type="date" value="${V.rDay}" data-f="rday" style="margin-bottom:12px" aria-label="Choisir un jour">
+    <div class="card"><h2 style="text-transform:capitalize">${longDate(V.rDay)}</h2>${e?`
+      <div class="kv"><span>Type</span><b>${TYPES[e.type].l}${e.double?" (double poste)":""}</b></div>
+      ${dayDetail(e)}
+      <h3>Totaux</h3>
+      <div class="kv"><span>Heures comptées</span><b>${fmtH(c.h)}</b></div>
+      <div class="kv"><span>Kilomètres</span><b>${km(c.km)}</b></div>
+      <div class="kv"><span>Indemnités km</span><b>${eur(c.ik)}</b></div>
+      <div class="kv"><span>Primes</span><b>${eur(c.primes)}</b></div>
+      <div class="kv"><span>Déplacement</span><b>${eur(c.depl)}</b></div>
+      <div class="kv"><span>Retenue sur salaire</span><b>${c.ded?"−"+eur(c.ded*taux):eur(0)}</b></div>
+      <button class="btn line full" style="margin-top:10px" data-act="open" data-d="${V.rDay}">Modifier la journée</button>`
+      :`<p class="muted">Rien de saisi ce jour.</p><button class="btn" data-act="open" data-d="${V.rDay}">Saisir la journée</button>`}</div>`;
+  }
+
+  if (V.tab==="semaine"){
+    const mon = V.rWeek, sun = addDays(mon,6); let rows = "", t = 0, kmT = 0, pr = 0, dp = 0;
+    for (let i=0;i<7;i++){ const ds = iso(addDays(mon,i)), e = S.days[ds], c = calc(e,ds); t += c.h; kmT += c.km; pr += c.primes; dp += c.depl;
+      rows += `<tr><td>${WD[addDays(mon,i).getDay()]} ${addDays(mon,i).getDate()}</td><td>${e?TYPES[e.type].l+(e.double?" ×2":""):"–"}</td><td class="r">${e?fmtH(c.h):"–"}</td><td class="r">${e&&c.km?km(c.km):"–"}</td></tr>`; }
+    const hs = Math.max(0,t-WEEKLY), manque = Math.max(0,WEEKLY-t);
+    h += `<div class="mnav"><button data-act="week" data-v="-1" aria-label="Semaine précédente">‹</button><b style="font-size:1.2rem;text-transform:none">${mon.getDate()} ${MONTHS[mon.getMonth()].slice(0,4)}. – ${sun.getDate()} ${MONTHS[sun.getMonth()].slice(0,4)}.</b><button data-act="week" data-v="1" aria-label="Semaine suivante">›</button></div>
+    <div class="card"><div class="tablewrap"><table><tr><th>Jour</th><th>Type</th><th class="r">Heures</th><th class="r">Km</th></tr>${rows}</table></div></div>
+    <div class="card"><h2>Total de la semaine</h2>
+      <div class="kv"><span>Heures comptées</span><b>${fmtH(t)} / 38h</b></div>
+      ${hs?`<div class="kv"><span>Heures en plus</span><b class="pos">+${fmtH(hs)}</b></div>`:""}
+      ${manque?`<div class="kv"><span>Heures manquantes</span><b class="neg">−${fmtH(manque)}</b></div>`:""}
+      <div class="kv"><span>Kilomètres</span><b>${km(kmT)}</b></div>
+      <div class="kv"><span>Indemnités km</span><b>${eur(kmT*ikRate())}</b></div>
+      <div class="kv"><span>Primes</span><b>${eur(pr)}</b></div>
+      <div class="kv"><span>Déplacements</span><b>${eur(dp)}</b></div></div>`;
+  }
+
+  if (V.tab==="mois"){
+    const y = V.rMonth.getFullYear(), mo = V.rMonth.getMonth(), s = monthSum(y,mo), majo = num(S.info.majo);
+    h += `<div class="mnav"><button data-act="rmonth" data-v="-1" aria-label="Mois précédent">‹</button><b>${MONTHS[mo]} ${y}</b><button data-act="rmonth" data-v="1" aria-label="Mois suivant">›</button></div>
+    <div class="card pay"><div>Net à payer estimé</div><div class="big">${eur(s.net.net)}</div>
+      <div class="sub"><span>Salaire brut total</span><b>${eur(s.fiche)}</b></div>
+      <div class="sub" style="border-top:0;padding-top:4px"><span>Brut sans primes ni déplacements</span><b>${eur(s.sans)}</b></div></div>
+    ${s.todo?`<div class="alert">${s.todo} trajet${s.todo>1?"s":""} sans distance confirmée ce mois-ci : leurs km ne sont pas encore comptés.</div>`:""}
+    <div class="card"><h2>À comparer avec la fiche de paye</h2>
+      <div class="kv"><span>Jours et heures prestés</span><b>${s.prestD} j, ${fmtH(s.prestH)}</b></div>
+      ${s.ferD?`<div class="kv"><span>Jours fériés payés<br><small class="muted">${s.ferNames.join(", ")}</small></span><b>${s.ferD} j, ${fmtH(s.ferH)}</b></div>`:""}
+      <div class="kv"><span>Salaire de base (${fmtH(s.schedH)} × ${eur(taux)})</span><b>${eur(s.base)}</b></div>
+      <div class="kv"><span>Absences injustifiées, récupérations et congés (${s.absInj} j, ${fmtH(s.dedH)})</span><b class="${s.ded?"neg":""}">−${eur(s.ded)}</b></div>
+      <div class="kv"><span>Samedis (${fmtH(s.sat)} à 150 %)</span><b>${eur(s.sat*1.5*taux)}</b></div>
+      <div class="kv"><span>Dimanches (${fmtH(s.sun)} à 200 %)</span><b>${eur(s.sun*2*taux)}</b></div>
+      <div class="kv"><span>Brut sans primes ni déplacements</span><b>${eur(s.sans)}</b></div>
+      <div class="kv"><span>Primes</span><b>${eur(s.primes)}</b></div>
+      <div class="kv"><span>Déplacements</span><b>${eur(s.depl)}</b></div>
+      <div class="kv"><span>Indemnités km (${km1(s.km)} km × ${esc(S.info.ik)} €)</span><b>${eur(s.ik)}</b></div>
+      <div class="kv"><span>Total avec primes, déplacements et km</span><b>${eur(s.avec)}</b></div></div>
+    <div class="card"><h2>Estimation du net</h2>
+      <div class="kv"><span>Salaire brut total</span><b>${eur(s.net.brut)}</b></div>
+      <div class="kv"><span>Cotisation ONSS (13,07 % sur 108 %)</span><b class="neg">−${eur(s.net.onss)}</b></div>
+      <div class="kv"><span>Réduction de cotisations (bonus à l’emploi)</span><b class="pos">+${eur(s.net.bonus)}</b></div>
+      <div class="kv"><span>Indemnité de mobilité</span><b>+${eur(s.net.mob)}</b></div>
+      <div class="kv"><span>Précompte professionnel (estimé)</span><b class="neg">−${eur(s.net.prec)}</b></div>
+      <div class="kv"><span>Frais forfaitaires</span><input class="in" inputmode="decimal" placeholder="0,00" style="max-width:110px;min-height:38px;padding:6px 8px;text-align:right" value="${esc(S.frais?.[y+"-"+pad(mo+1)]||"")}" data-f="frais" data-v="${y+"-"+pad(mo+1)}" aria-label="Frais forfaitaires du mois"></div>
+      ${s.depl?`<div class="kv"><span>Déplacements</span><b>+${eur(s.depl)}</b></div>`:""}
+      <div class="kv"><span>Cotisation spéciale sécurité sociale</span><b class="neg">−${eur(s.net.csss)}</b></div>
+      <div class="kv"><span><b>Net à payer estimé</b></span><b>${eur(s.net.net)}</b></div>
+      <p class="hint">Calculé sur le modèle de tes fiches de paye de juillet à octobre 2026 : l’écart avec le vrai net y est de 5 à 31 €. Les frais forfaitaires changent chaque mois : recopie-les depuis la fiche. Le précompte exact suit des barèmes officiels que l’application ne peut pas reproduire à l’euro près.</p></div>
+    <div class="card"><h2>Activité</h2>
+      <div class="kv"><span>Heures comptées</span><b>${fmtH(s.h)}</b></div>
+      <div class="kv"><span>Kilomètres parcourus</span><b>${km(s.km)}</b></div>
+      ${Object.entries(TYPES).map(([k,v])=>s.counts[k]?`<div class="kv"><span>${v.l}</span><b>${s.counts[k]} j</b></div>`:"").join("")}
+      ${s.weeks.length?`<div class="tablewrap" style="margin-top:8px"><table><tr><th>Semaine</th><th class="r">Heures</th><th class="r">En plus</th></tr>${s.weeks.map(w=>`<tr><td>du ${w.mon.getDate()} ${MONTHS[w.mon.getMonth()].slice(0,4)}.</td><td class="r">${fmtH(w.t)}</td><td class="r">${w.hs?"+"+fmtH(w.hs):"–"}</td></tr>`).join("")}</table></div>`:""}</div>`;
+    const keys = [...new Set(Object.keys(S.days).map(k=>k.slice(0,7)))].sort().reverse();
+    if (keys.length) h += `<div class="card"><h2>Tous les mois</h2>${keys.map(k=>{ const [yy,mm] = k.split("-").map(Number), m = monthSum(yy,mm-1);
+      return `<button class="mrow" data-act="gomonth" data-v="${k}"><span>${MONTHS[mm-1]} ${yy}</span><span style="text-align:right"><b>${eur(m.net.net)}</b> <small class="muted">net estimé</small><br><small class="muted">brut ${eur(m.fiche)}</small></span></button>`; }).join("")}</div>`;
+    h += `<p class="hint">Salaire de base : heures prévues du mois × taux horaire ; seules les absences injustifiées, les récupérations et les congés le font baisser. Les heures du samedi sont payées en plus à 150 % et celles du dimanche à 200 %, à partir de minuit pile. Les heures au-delà de 38h par semaine sont affichées pour information, sans effet sur le salaire.</p>`;
+  }
+  return h;
+}
+
+function renderInfo(){
+  const taux = num(S.info.taux);
+  const routes = Object.entries(S.routes).map(([k,v])=>{ const [a,b] = k.split("|").map(placeById); return a&&b ? {k,v,a,b} : null; }).filter(Boolean);
+  return `<div class="card"><h2>Salaire</h2>
+    <div class="field"><label for="taux">Taux horaire brut (€)</label><input id="taux" class="in" inputmode="decimal" placeholder="Ex. 14,50" value="${esc(S.info.taux)}" data-f="taux"></div>
+    <div class="field"><label for="ik">Indemnité kilométrique (€/km)</label><input id="ik" class="in" inputmode="decimal" value="${esc(S.info.ik)}" data-f="ik"></div>
+    <div class="kv"><span>Arrondi des heures</span><b>15 min</b></div>
+    <div class="kv"><span>Base hebdomadaire</span><b>38h</b></div>
+    <div class="field"><label for="entree">Date d’entrée</label><input id="entree" type="date" value="${esc(S.info.entree||"")}" data-f="entree"></div>
+    <p class="hint">Salaire de base du mois : heures prévues × taux horaire. Heures prévues : 8h du lundi au jeudi et 6h le vendredi, pour chaque jour ouvrable du mois à partir de la date d’entrée, comme sur tes fiches de paye.</p></div>
+  <div class="card"><h2>Application de localisation</h2><p class="hint" style="margin-top:0">Ouvre les adresses de vos pointages.</p>
+    <div class="opts">${Object.entries(MAPS).map(([k,m])=>`<button class="opt${S.settings.mapApp===k?" on":""}" data-act="map" data-v="${k}"><span class="i">${m.i}</span><span><b>${m.n}</b><small>${m.d}</small></span></button>`).join("")}</div></div>
+  <div class="card"><h2>Carnet d’adresses</h2>
+    <p class="hint" style="margin-top:0">Quand vous pointez près d’une adresse enregistrée (moins de 300 m), elle est reconnue automatiquement. Sinon, vous saisissez l’adresse une fois et elle est ajoutée ici.</p>
+    ${S.places.map(p=>`<div class="place"><div class="row"><input class="in grow" placeholder="Adresse" value="${esc(p.addr)}" data-f="place-addr" data-id="${p.id}" style="margin:0" aria-label="Adresse"><button class="x" data-act="delplace" data-id="${p.id}" aria-label="Supprimer l’adresse">✕</button></div>
+      <div>${p.id===S.info.homeId?`<span class="badge">🏠 Domicile</span>`:""}<span class="badge">${p.lat!=null?"Position enregistrée":"Sans position"}</span></div>
+      <div class="btnrow"><button class="btn line sm" data-act="placepos" data-id="${p.id}">📍 Enregistrer la position actuelle</button>${p.id!==S.info.homeId?`<button class="btn line sm" data-act="sethome" data-id="${p.id}">🏠 Définir comme domicile</button>`:""}</div></div>`).join("") || `<p class="muted">Aucune adresse pour l’instant.</p>`}
+    <div class="btnrow"><button class="btn line" data-act="addplace">+ Ajouter une adresse</button></div></div>
+  <div class="card"><h2>Distances mémorisées</h2>
+    <p class="hint" style="margin-top:0">Distances calculées automatiquement ou corrigées par vous, réutilisées pour chaque trajet entre ces deux adresses, dans les deux sens.</p>
+    ${routes.map(r=>`<div class="traj"><div class="hint" style="margin:0">${esc(r.a.addr)} ↔ ${esc(r.b.addr)}</div><div class="row" style="flex:none"><b>${km(r.v)}</b><button class="x" data-act="delroute" data-v="${r.k}" aria-label="Oublier cette distance">✕</button></div></div>`).join("") || `<p class="muted" style="margin:0">Aucune distance mémorisée.</p>`}</div>
+  <div class="card"><h2>Calcul des kilomètres</h2><p class="muted" style="margin:0">Pour chaque poste : trajet aller (départ domicile → début de chantier) et retour (mobilité vers domicile → fin de journée). La distance par la route entre deux adresses est calculée automatiquement avec OpenStreetMap dès qu’il y a du réseau, puis mémorisée pour ce trajet. Elle peut différer de quelques kilomètres de Google Maps : vous pouvez toujours la corriger, et votre correction est gardée. Effacer la case relance le calcul automatique.</p></div>`;
+}
+
+function renderSettings(){
+  const t = S.settings.theme || "auto";
+  return `<div class="card"><h2>Thème</h2><div class="seg" style="margin:0">${[["clair","☀️ Clair"],["sombre","🌙 Sombre"],["auto","Auto"]].map(([k,l])=>`<button class="${t===k?"on":""}" data-act="theme" data-v="${k}">${l}</button>`).join("")}</div>
+    <p class="hint">Auto suit le réglage du téléphone.</p></div>
+  <div class="card"><h2>Adresse automatique</h2>
+    <label class="check"><input type="checkbox" data-f="autoAddr" ${S.settings.autoAddr?"checked":""}> Trouver l’adresse en pointant</label>
+    <p class="hint" style="margin-top:0">Quand le lieu n’est pas dans le carnet, l’adresse de la position actuelle est cherchée sur OpenStreetMap (il faut du réseau), puis enregistrée dans le carnet. Sans réseau, elle est cherchée dès son retour. Google Maps, Waze et Plans ne transmettent pas les adresses aux autres applications.</p></div>
+  <div class="card"><h2>Sauvegarde</h2><p class="muted" style="margin-top:0">Vos données restent uniquement sur ce téléphone. Enregistrez une sauvegarde de temps en temps (dans Fichiers, Drive ou par e-mail) pour ne rien perdre en cas de changement de téléphone.</p>
+    <div class="btnrow"><button class="btn" data-act="export">Enregistrer une sauvegarde</button>
+    <label class="btn line" style="display:inline-flex;align-items:center">Restaurer une sauvegarde<input type="file" accept=".json,application/json" data-f="import" style="display:none"></label></div></div>
+  <div class="card"><h2>Réinitialiser</h2><p class="muted" style="margin-top:0">Efface toutes les journées, adresses et informations saisies sur cet appareil.</p>
+    <button class="btn danger" data-act="reset">Tout effacer</button></div>`;
+}
+
+function renderModal(){
+  const m = document.getElementById("modal");
+  if (S.settings.mapApp){ m.innerHTML = ""; return; }
+  m.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="card"><h2 id="mt">Bienvenue</h2>
+    <p style="margin-top:0">Choisissez l’application de localisation à utiliser pour vos pointages. Vous pourrez la changer dans Infos.</p>
+    <div class="opts">${Object.entries(MAPS).map(([k,m])=>`<button class="opt" data-act="map" data-v="${k}"><span class="i">${m.i}</span><span><b>${m.n}</b><small>${m.d}</small></span></button>`).join("")}</div></div></div>`;
+}
+
+/* ---------- Données de test ---------- */
+function demo(){
+  if (!num(S.info.taux)) S.info.taux = "14,50";
+  if (!S.settings.mapApp) S.settings.mapApp = "waze";
+  const P = (addr,lat,lng) => findPlace(addr) || addPlace(addr,lat,lng);
+  const home = P("12 rue des Lilas, 69003 Lyon",45.7597,4.8486);
+  if (!S.info.homeId) S.info.homeId = home.id;
+  const sites = [P("45 avenue Roger Salengro, 69100 Villeurbanne",45.7719,4.8902), P("8 rue Pierre Sémard, 69600 Oullins",45.7146,4.8075), P("3 montée des Soldats, 69300 Caluire",45.7952,4.8462)];
+  S.routes[rkey(home.id,sites[0].id)] = 6.4; S.routes[rkey(home.id,sites[1].id)] = 9.8; S.routes[rkey(home.id,sites[2].id)] = 5.3;
+  const pt = (t,pl) => ({t, place:pl.id, lat:pl.lat, lng:pl.lng});
+  const now = new Date(), start = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  let i = 0;
+  for (let d = new Date(start); iso(d) < todayIso(); d = addDays(d,1)){
+    if (d.getDay()===0 || d.getDay()===6) continue;
+    i++; const s = sites[i%3], e = blank();
+    // Lun.–jeu. : chantier 07:30 → mobilité 16:00 = 8h30 − 30 min de pause = 8h. Vendredi : mobilité 14:00 = 6h.
+    const fri = d.getDay()===5;
+    e.postes[0].points = {depart:pt("06:50",home), chantier:pt("07:30",s), mobilite:pt(fri?"14:00":"16:00",s), fin:pt(fri?"14:35":"16:35",home)};
+    if (i%7===3){ e.noPause = true; e.postes[0].points.mobilite.t = fri?"13:30":"15:30"; e.postes[0].points.fin.t = fri?"14:05":"16:05"; }
+    if (i%6===0) e.primes.push({label:"Prime de salissure", montant:"3,50"});
+    if (i===15 || i===33){
+      e.double = true;
+      const s2 = sites[(i+1)%3];
+      e.postes[1].points = {depart:pt("21:20",home), chantier:pt("22:00",s2), mobilite:pt("01:30",s2), fin:pt("02:00",home)};
+      e.primes.push({label:"Prime de nuit", montant:"12"});
+    }
+    if (i===5 || i===27) { e.type = "abs_just"; e.postes = blank().postes; }
+    if (i===9) { e.type = "abs_injust"; e.postes = blank().postes; }
+    if (i===12 || i===30) { e.type = "deplacement"; e.deplMontant = "45"; }
+    if (i===20) { e.type = "conge"; e.postes = blank().postes; }
+    if (i===23) { e.type = "recup"; e.postes = blank().postes; }
+    S.days[iso(d)] = e;
+  }
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, v = b.dataset.v;
+  if (a==="nav"){ V.page = b.dataset.p; window.scrollTo(0,0); }
+  else if (a==="cal"){ V.cal = new Date(V.cal.getFullYear(), V.cal.getMonth()+Number(v), 1); }
+  else if (a==="open"){ V.day = b.dataset.d; V.page = "day"; window.scrollTo(0,0); }
+  else if (a==="back"){ V.page = "cal"; V.cal = new Date(parse(V.day).getFullYear(), parse(V.day).getMonth(), 1); }
+  else if (a==="type"){ ensure(V.day).type = v; save(); }
+  else if (a==="pointer"){
+    const k = b.dataset.k, i = Number(b.dataset.i), P = ensure(V.day).postes[i].points, n = new Date(), t = pad(n.getHours())+":"+pad(n.getMinutes());
+    if (b.dataset.to==="1"){ P[k] = {...(P[k]||{}), t}; save(); toast("Pointé à "+t); }
+    else {
+      b.disabled = true; b.textContent = "Localisation…";
+      const p = await getPos();
+      if (!p){ P[k] = {...(P[k]||{}), t}; save(); toast("Pointé à "+t+". Position GPS indisponible : vérifiez que la localisation est autorisée, ou saisissez l’adresse."); render(); return; }
+      let near = nearest(p.lat,p.lng), found = false, pending = false;
+      if (!near && S.settings.autoAddr){
+        b.textContent = "Recherche de l’adresse…";
+        const addr = await reverseGeocode(p.lat,p.lng);
+        if (addr){ near = findPlace(addr) || addPlace(addr,p.lat,p.lng); found = true; } else pending = true;
+      }
+      P[k] = {...(P[k]||{}), t, lat:p.lat, lng:p.lng, place:near ? near.id : null, pending};
+      save(); toast(near ? "Pointé à "+t+" : "+near.addr+(found?" (ajoutée au carnet)":"") : pending ? "Pointé à "+t+". Pas de réseau : l’adresse sera cherchée dès son retour." : "Pointé à "+t+". Saisissez l’adresse de ce nouveau lieu.");
+    }
+  }
+  else if (a==="home"){ const P = ensure(V.day).postes[Number(b.dataset.i)].points, k = b.dataset.k; P[k] = {...(P[k]||{}), place:S.info.homeId}; save(); }
+  else if (a==="addprime"){ ensure(V.day).primes.push({label:"", montant:""}); save(); }
+  else if (a==="delprime"){ ensure(V.day).primes.splice(Number(b.dataset.i),1); save(); }
+  else if (a==="delday"){ if (confirm("Effacer cette journée ?")){ delete S.days[V.day]; save(); toast("Journée effacée"); } }
+  else if (a==="tab"){ V.tab = v; }
+  else if (a==="week"){ V.rWeek = addDays(V.rWeek, 7*Number(v)); }
+  else if (a==="rmonth"){ V.rMonth = new Date(V.rMonth.getFullYear(), V.rMonth.getMonth()+Number(v), 1); }
+  else if (a==="gomonth"){ const [y,m] = v.split("-").map(Number); V.rMonth = new Date(y,m-1,1); window.scrollTo(0,0); }
+  else if (a==="map"){ S.settings.mapApp = v; save(); toast(MAPS[v].n+" sélectionné"); }
+  else if (a==="addplace"){ S.places.push({id:newId(), addr:""}); save(); }
+  else if (a==="delplace"){
+    const id = b.dataset.id; if (!confirm("Supprimer cette adresse du carnet ?")) return;
+    S.places = S.places.filter(p=>p.id!==id); if (S.info.homeId===id) S.info.homeId = null;
+    for (const e of Object.values(S.days)) for (const po of e.postes||[]) for (const p of Object.values(po.points)) if (p.place===id) p.place = null;
+    for (const k of Object.keys(S.routes)) if (k.split("|").includes(id)) delete S.routes[k];
+    save();
+  }
+  else if (a==="placepos"){ b.disabled = true; b.textContent = "Localisation…"; const p = await getPos(), pl = placeById(b.dataset.id); if (!p){ toast("Position GPS indisponible : autorisez la localisation."); render(); return; } pl.lat = p.lat; pl.lng = p.lng; save(); toast("Position enregistrée"); }
+  else if (a==="sethome"){ S.info.homeId = b.dataset.id; save(); toast("Domicile défini"); }
+  else if (a==="delroute"){ delete S.routes[v]; save(); }
+  else if (a==="theme"){ S.settings.theme = v; save(); applyTheme(); }
+  else if (a==="demo"){ if (Object.keys(S.days).length===0 || confirm("Remplacer les journées des deux derniers mois par des données de test ?")){ demo(); save(); toast("Données de test chargées"); V.page = "cal"; V.cal = new Date(new Date().getFullYear(), new Date().getMonth(), 1); } }
+  else if (a==="export"){
+    const name = "pointages-"+todayIso()+".json", blob = new Blob([JSON.stringify(S,null,1)], {type:"application/json"});
+    const file = new File([blob], name, {type:"application/json"});
+    try { if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"Sauvegarde Mes Pointages"}); return; } } catch(e){ if (e.name==="AbortError") return; }
+    const u = URL.createObjectURL(blob), l = document.createElement("a"); l.href = u; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u), 2000);
+    toast("Sauvegarde enregistrée"); return;
+  }
+  else if (a==="reset"){ if (confirm("Effacer toutes les données ?")){ S = null; try{ localStorage.removeItem(KEY); }catch(e){} load(); applyTheme(); toast("Données effacées"); } }
+  else return;
+  render();
+});
+
+document.addEventListener("change", ev => {
+  const el = ev.target, f = el.dataset.f; if (!f) return;
+  if (f==="import"){
+    const file = el.files && el.files[0]; if (!file) return;
+    file.text().then(txt => {
+      let data; try { data = JSON.parse(txt); } catch(e){ toast("Ce fichier n’est pas une sauvegarde valide."); return; }
+      if (!data || typeof data!=="object" || !data.days){ toast("Ce fichier n’est pas une sauvegarde valide."); return; }
+      if (!confirm("Remplacer toutes les données de ce téléphone par cette sauvegarde ?")) return;
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){}
+      load(); applyTheme(); toast("Sauvegarde restaurée"); V.page = "cal"; render();
+    });
+    el.value = ""; return;
+  }
+  const val = el.type==="checkbox" ? el.checked : el.value;
+  if (f==="date"){
+    if (!val || val===V.day) return;
+    if (S.days[V.day]){
+      if (S.days[val] && !confirm("Une journée existe déjà le "+longDate(val)+". La remplacer ?")){ el.value = V.day; return; }
+      S.days[val] = S.days[V.day]; delete S.days[V.day]; save(); toast("Journée déplacée");
+    }
+    V.day = val;
+  }
+  else if (f==="pt-t"){ const P = ensure(V.day).postes[Number(el.dataset.i)].points, k = el.dataset.k; P[k] = {...(P[k]||{}), t:val}; save(); }
+  else if (f==="addr"){
+    const P = ensure(V.day).postes[Number(el.dataset.i)].points, k = el.dataset.k, pt = {...(P[k]||{})};
+    if (!val.trim()) pt.place = null;
+    else { let pl = findPlace(val); if (!pl){ pl = addPlace(val, pt.lat, pt.lng); toast("Adresse ajoutée au carnet"); } else if (pl.lat==null && pt.lat!=null){ pl.lat = pt.lat; pl.lng = pt.lng; } pt.place = pl.id; pt.pending = false; }
+    P[k] = pt; save();
+  }
+  else if (f==="km"){
+    const d = ensure(V.day), i = Number(el.dataset.i), P = d.postes[i].points, from = el.dataset.from, a = P[from]?.place, b = P[el.dataset.to]?.place, key = i+"-"+from;
+    if (a && b && a!==b){ const k = rkey(a,b); if (S.routeAuto) delete S.routeAuto[k]; routeFailed.delete(k); if (val.trim()==="") delete S.routes[k]; else { S.routes[k] = num(val); toast("Distance mémorisée pour ce trajet"); } delete d.kmOver[key]; }
+    else { if (val.trim()==="") delete d.kmOver[key]; else d.kmOver[key] = val.trim(); }
+    save();
+  }
+  else if (f==="noPause"){ ensure(V.day).noPause = val; save(); }
+  else if (f==="double"){ ensure(V.day).double = val; save(); }
+  else if (f==="deplMontant"){ ensure(V.day).deplMontant = val.trim(); save(); }
+  else if (f==="prime-l"){ ensure(V.day).primes[Number(el.dataset.i)].label = val; save(); }
+  else if (f==="prime-m"){ ensure(V.day).primes[Number(el.dataset.i)].montant = val.trim(); save(); }
+  else if (f==="rday"){ if (val) V.rDay = val; }
+  else if (f==="taux"){ S.info.taux = val.trim(); save(); }
+  else if (f==="majo"){ S.info.majo = val.trim(); save(); }
+  else if (f==="ik"){ S.info.ik = val.trim(); save(); }
+  else if (f==="entree"){ S.info.entree = val; save(); }
+  else if (f==="frais"){ S.frais = S.frais || {}; if (val.trim()==="") delete S.frais[el.dataset.v]; else S.frais[el.dataset.v] = val.trim(); save(); }
+  else if (f==="autoAddr"){ S.settings.autoAddr = val; save(); }
+  else if (f==="place-addr"){ const pl = placeById(el.dataset.id); if (pl){ pl.addr = val.trim(); save(); } }
+  else return;
+  render();
+});
+
+load(); applyTheme(); render();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+window.addEventListener("online", () => { routeFailed.clear(); resolvePending(); });
+setTimeout(resolvePending, 1500);
+</script>
+</body>
+</html>
